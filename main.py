@@ -4,16 +4,15 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiohttp import web
 
-# --- MA'LUMOTLAR ---
 TOKEN = "8673795387:AAFioVGmoTAOXoO1CXxrpyhAoyYmtEXGkLg"
 ADMIN_ID = 8308144667
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# --- RENDER UCHUN VEB-SERVER ---
+# --- SERVER QISMI ---
 async def handle(request):
-    return web.Response(text="Sacury SMM boti faol!")
+    return web.Response(text="Bot ishlayapti!")
 
 async def start_web_server():
     app = web.Application()
@@ -24,17 +23,36 @@ async def start_web_server():
     site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
 
-# --- BOT BUYRUQLARI ---
+# --- ADMIN KLAVIATURASI ---
+def get_admin_keyboard():
+    kb = [
+        [types.KeyboardButton(text="➕ Xizmat qo'shish")],
+        [types.KeyboardButton(text="📊 Statistika"), types.KeyboardButton(text="🔑 API sozlash")],
+        [types.KeyboardButton(text="📩 Xabar yuborish"), types.KeyboardButton(text="⬅️ Orqaga")]
+    ]
+    return types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+# --- BOT MANTIQI ---
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer("👋 Salom! Sacury SMM botiga xush kelibsiz.\nBot 24/7 ishlamoqda.")
+    await message.answer(
+        "👋 Salom! Zenta SMM botiga xush kelibsiz🤝\nBot 24/7 ishlamoqda.",
+        reply_markup=get_admin_keyboard() if message.from_user.id == ADMIN_ID else None
+    )
 
-@dp.message(Command("admin"))
-async def admin_cmd(message: types.Message):
+# TUGMALAR UCHUN JAVOBLAR:
+@dp.message(F.text == "➕ Xizmat qo'shish")
+async def add_service(message: types.Message):
     if message.from_user.id == ADMIN_ID:
-        await message.answer("🛠 Xush kelibsiz, Admin!")
-    else:
-        await message.answer("❌ Siz admin emassiz.")
+        await message.answer("🛠 Yangi xizmat qo'shish bo'limi hali tayyor emas, lekin tugma ishladi!")
+
+@dp.message(F.text == "📊 Statistika")
+async def show_stats(message: types.Message):
+    await message.answer("📈 Hozircha botda 1 ta foydalanuvchi bor (Siz).")
+
+@dp.message(F.text == "🔑 API sozlash")
+async def set_api(message: types.Message):
+    await message.answer("🔑 SMM Panel API ID raqamini kiriting:")
 
 async def main():
     asyncio.create_task(start_web_server())
@@ -42,3 +60,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    
